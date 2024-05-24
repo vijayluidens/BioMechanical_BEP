@@ -78,8 +78,8 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     plt.legend()
 
 # Define file paths and frequency ranges
-file_paths = ["PP00/PP00_6kg.txt", "PP00/PP00_8kg.txt", "PP00/PP00_10kg.txt"]
-frequency_ranges = [(4000, 7200), (11880, 15800), (4300, 5500)]
+file_paths = ["PP00/PP00_8kg.txt", "PP00/PP00_10kg.txt"]
+frequency_ranges = [(7800, 9400), (5000, 7700)]
 
 # Create a figure for subplots
 plt.figure(figsize=(12, 18))
