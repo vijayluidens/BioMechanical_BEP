@@ -34,7 +34,7 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
 
     # Filter ES-T left and right data and calculate RMS
     filtered_rms_left = butter_lowpass_filter((transformed_data[:, 0])**2, cutoff, fs, order)
-    filtered_rms_right = butter_lowpass_filter((transformed_data[:, 1])**2, cutoff, fs, order)
+    filtered_rms_right = butter_lowpass_filter((transformed_data[:, 2])**2, cutoff, fs, order)
 
     # Take the square root to get RMS after filtering
     filtered_rms_left = np.sqrt(filtered_rms_left)
@@ -78,7 +78,7 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     plt.legend()
 
 # Define file paths and frequency ranges
-file_paths = ["PP00_6kg.txt", "PP00_8kg.txt", "PP00_10kg.txt"]
+file_paths = ["PP00/PP00_6kg.txt", "PP00/PP00_8kg.txt", "PP00/PP00_10kg.txt"]
 frequency_ranges = [(4000, 7200), (11880, 15800), (4300, 5500)]
 
 # Create a figure for subplots
