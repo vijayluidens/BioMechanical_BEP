@@ -21,8 +21,8 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 data = np.loadtxt("MVC/PP07_MVC.txt")
 
 # Define the frequency range to extract data from
-start_freq = 5000
-end_freq = 9800
+start_freq = 20600
+end_freq = 22900
 
 # Extract the relevant columns (5th to 8th) for the specified frequency range
 frequency = data[:, 0]  
