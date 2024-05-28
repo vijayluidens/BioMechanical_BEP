@@ -1,0 +1,110 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy import signal
+
+def transform_mV(emg_data):
+    transformed_data = (emg_data - ((2**16 - 1) / 2)) / 32768
+    return transformed_data
+
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = signal.lfilter(b, a, data)
+    return y
+
+# Load the data from the file
+data = np.loadtxt("MVC/PP05_MVC.txt")
+
+# Define the frequency range to extract data from
+start_freq = 5400
+end_freq = 20900
+
+# Extract the relevant columns (5th to 8th) for the specified frequency range
+frequency = data[:, 0]  
+relevant_data = data[(frequency >= start_freq) & (frequency <= end_freq), 4:8]
+
+# Transform values to millivolt
+transformed_data = transform_mV(relevant_data)
+
+cutoff = 10  # Define the cutoff frequency
+fs = 1000   # Define the sampling frequency
+order = 4   # Define the filter order
+
+# Filter ES-T and ES-L data and calculate RMS
+filtered_rms_left_T = butter_lowpass_filter((transformed_data[:, 0])**2, cutoff, fs, order)
+filtered_rms_left_L = butter_lowpass_filter((transformed_data[:, 1])**2, cutoff, fs, order)
+filtered_rms_right_T = butter_lowpass_filter((transformed_data[:, 2])**2, cutoff, fs, order)
+filtered_rms_right_L = butter_lowpass_filter((transformed_data[:, 3])**2, cutoff, fs, order)
+
+# Ensure no negative or NaN values
+filtered_rms_left_T[filtered_rms_left_T < 0] = 0
+filtered_rms_left_T = np.nan_to_num(filtered_rms_left_T)
+filtered_rms_right_T[filtered_rms_right_T < 0] = 0
+filtered_rms_right_T = np.nan_to_num(filtered_rms_right_T)
+
+# Lumbar region
+filtered_rms_left_L[filtered_rms_left_L < 0] = 0
+filtered_rms_left_L = np.nan_to_num(filtered_rms_left_L)
+filtered_rms_right_L[filtered_rms_right_L < 0] = 0
+filtered_rms_right_L = np.nan_to_num(filtered_rms_right_L)
+
+# Take the square root to get RMS after filtering
+RMS_EST_L = np.sqrt(filtered_rms_left_T)
+RMS_EST_R= np.sqrt(filtered_rms_right_T)
+RMS_ESL_L = np.sqrt(filtered_rms_left_L)
+RMS_ESL_R = np.sqrt(filtered_rms_right_L)
+
+
+# Maximum values and indices
+MAX_EST_L = np.max(RMS_EST_L)
+max_index_EST_L = np.argmax(RMS_EST_L)
+
+MAX_EST_R = np.max(RMS_EST_R)
+max_index_EST_R = np.argmax(RMS_EST_R)
+
+MAX_ESL_L = np.max(RMS_ESL_L)
+max_index_ESL_L = np.argmax(RMS_ESL_L)
+
+MAX_ESL_R = np.max(RMS_ESL_R)
+max_index_ESL_R = np.argmax(RMS_ESL_R)
+
+# Print maximum values and their indices
+print(f'MAX_EST_L: {MAX_EST_L:.4f} at index {max_index_EST_L}')
+print(f'MAX_EST_R: {MAX_EST_R:.4f} at index {max_index_EST_R}')
+print(f'MAX_ESL_L: {MAX_ESL_L:.4f} at index {max_index_ESL_L}')
+print(f'MAX_ESL_R: {MAX_ESL_R:.4f} at index {max_index_ESL_R}')
+
+# Plotting the raw EMG data and RMS values
+plt.figure(figsize=(15, 10))
+
+plt.subplot(2, 1, 1)
+plt.plot(transformed_data[:, 0], label='Raw Left Thoracic (T)', color='c', alpha=0.5)
+plt.plot(transformed_data[:, 2], label='Raw Right Thoracic (T)', color='m', alpha=0.5)
+plt.plot(RMS_EST_L, label='RMS Left Thoracic (T)', color='b')
+plt.plot(RMS_EST_R, label='RMS Right Thoracic (T)', color='r')
+plt.scatter(max_index_EST_L, MAX_EST_L, color='b', marker='o', s=100, label='Max RMS Left Thoracic')
+plt.scatter(max_index_EST_R, MAX_EST_R, color='r', marker='o', s=100, label='Max RMS Right Thoracic')
+plt.title('Raw EMG Data and RMS (Thoracic)')
+plt.xlabel('Sample')
+plt.ylabel('Value')
+plt.legend()
+
+plt.subplot(2, 1, 2)
+plt.plot(transformed_data[:, 1], label='Raw Left Lumbar (L)', color='y', alpha=0.5)
+plt.plot(transformed_data[:, 3], label='Raw Right Lumbar (L)', color='k', alpha=0.5)
+plt.plot(RMS_ESL_L, label='RMS Left Lumbar (L)', color='g')
+plt.plot(RMS_ESL_R, label='RMS Right Lumbar (L)', color='m')
+plt.scatter(max_index_ESL_L, MAX_ESL_L, color='g', marker='o', s=100, label='Max RMS Left Lumbar')
+plt.scatter(max_index_ESL_R, MAX_ESL_R, color='m', marker='o', s=100, label='Max RMS Right Lumbar')
+plt.title('Raw EMG Data and RMS (Lumbar)')
+plt.xlabel('Sample')
+plt.ylabel('Value')
+plt.legend()
+
+plt.tight_layout()
+plt.show()

@@ -35,6 +35,7 @@ plt.plot(t, MVC)
 
 lp = butter_lowpass_filter((MVC**2), cutoff, fs, order)
 lp = np.sqrt(lp)
+
 plt.plot(t, lp, 'k')
 max_lp = np.max(lp)
 arg_max = np.argmax(lp)

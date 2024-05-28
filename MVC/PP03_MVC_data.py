@@ -35,7 +35,7 @@ cutoff = 10  # Define the cutoff frequency
 fs = 1000   # Define the sampling frequency
 order = 4   # Define the filter order
 
-# Filter ES-T left and right data and calculate RMS
+# Filter ES-L left and right data and calculate RMS
 filtered_rms_left = butter_lowpass_filter((transformed_data[:, 1])**2, cutoff, fs, order)
 filtered_rms_right = butter_lowpass_filter((transformed_data[:, 3])**2, cutoff, fs, order)
 

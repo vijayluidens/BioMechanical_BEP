@@ -22,7 +22,7 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     data = np.loadtxt(file_path)
 
     # Extract the relevant columns (5th to 8th) for the specified frequency range
-    frequency = data[:, 0]  
+    frequency = data[:, 0]
     relevant_data = data[(frequency >= start_freq) & (frequency <= end_freq), 4:8]
 
     # Transform values to millivolt
@@ -33,19 +33,22 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     order = 4   # Define the filter order
 
     # Filter ES-T left and right data and calculate RMS
-    filtered_rms_left = butter_lowpass_filter((transformed_data[:, 0])**2, cutoff, fs, order)
-    filtered_rms_right = butter_lowpass_filter((transformed_data[:, 2])**2, cutoff, fs, order)
+    filtered_rms_left_thoracic = butter_lowpass_filter((transformed_data[:, 0])**2, cutoff, fs, order)
+    filtered_rms_right_thoracic = butter_lowpass_filter((transformed_data[:, 2])**2, cutoff, fs, order)
 
     # Take the square root to get RMS after filtering
-    filtered_rms_left = np.sqrt(filtered_rms_left)
-    filtered_rms_right = np.sqrt(filtered_rms_right)
-
-    # Calculate the average RMS
-    average_rms = (filtered_rms_left + filtered_rms_right) / 2
+    filtered_rms_left_thoracic = np.sqrt(filtered_rms_left_thoracic)
+    filtered_rms_right_thoracic = np.sqrt(filtered_rms_right_thoracic)
 
     # Find the maximum value of the average RMS and its index
-    max_avg_rms = np.max(average_rms)
-    max_avg_rms_index = np.argmax(average_rms)
+    max_rms_left = np.max(filtered_rms_left_thoracic)
+    max_rms_index_left = np.argmax(filtered_rms_left_thoracic)
+    max_rms_right = np.max(filtered_rms_right_thoracic)
+    max_rms_index_right = np.argmax(filtered_rms_right_thoracic)
+
+    # Print the maximum RMS values
+    print(f'Max RMS ES-T Left for {file_path}: {max_rms_left:.4f}')
+    print(f'Max RMS ES-T Right for {file_path}: {max_rms_right:.4f}')
 
     # Extract the time indices for the selected range for plotting
     selected_indices = np.where((frequency >= start_freq) & (frequency <= end_freq))[0]
@@ -62,18 +65,18 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     plt.title(f'Erector Spinae Data for {file_path} Specified Frequency Range')
 
     # Plot filtered RMS of ES-T left and right
-    plt.plot(time, filtered_rms_left, 'k', label='Filtered RMS of ES-T Left')
-    plt.plot(time, filtered_rms_right, 'm', label='Filtered RMS of ES-T Right')
+    plt.plot(time, filtered_rms_left_thoracic, 'k', label='Filtered RMS of ES-T Left')
+    plt.plot(time, filtered_rms_right_thoracic, 'm', label='Filtered RMS of ES-T Right')
 
-    # Plot average RMS
-    plt.plot(time, average_rms, 'r', label='Average RMS')
+    # Plot vertical line at max RMS index
+    plt.axvline(x=max_rms_index_left, color='g', linestyle='--', label='Max RMS of ES-T Left')
+    plt.axvline(x=max_rms_index_right, color='g', linestyle='--', label='Max RMS of ES-T Right')
 
-    # Plot vertical line at max average RMS index
-    plt.axvline(x=max_avg_rms_index, color='g', linestyle='--', label='Max Avg RMS')
-
-    # Plot dot at maximum value of the mean
-    plt.scatter(max_avg_rms_index, max_avg_rms, color='b', zorder=5)
-    plt.text(max_avg_rms_index, max_avg_rms, f'({max_avg_rms_index}, {max_avg_rms:.4f})', fontsize=9, verticalalignment='bottom')
+    # Plot dot at maximum value ES-T left and right
+    plt.scatter(max_rms_index_left, max_rms_left, color='b', zorder=5)
+    plt.scatter(max_rms_index_right, max_rms_right, color='cyan', zorder=5)
+    plt.text(max_rms_index_left, max_rms_left, f'({max_rms_index_left}, {max_rms_left:.4f})', fontsize=9, verticalalignment='bottom')
+    plt.text(max_rms_index_right, max_rms_right, f'({max_rms_index_right}, {max_rms_right:.4f})', fontsize=9, verticalalignment='bottom')
 
     plt.legend()
 
