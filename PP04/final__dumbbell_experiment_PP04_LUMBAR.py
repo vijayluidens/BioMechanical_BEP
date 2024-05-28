@@ -84,9 +84,9 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     return max_avg_rms
 
 # Define file paths and frequency ranges
-file_paths = ["PP06/PP06_8kg.txt", "PP06/PP06_10kg.txt"]
-frequency_ranges = [(7800, 9400), (5000, 7700)]
-loads = [8, 10]  # Corresponding loads in kg
+file_paths = ["PP04/PP04_6kg.txt", "PP04/PP04_8kg.txt", "PP04/PP04_10kg.txt"]
+frequency_ranges = [(6800, 10800),(6600, 15200),(8100, 16500)]
+loads = [6, 8, 10]  # Corresponding loads in kg
 
 # Create a figure for subplots
 plt.figure(figsize=(12, 18))
@@ -102,9 +102,9 @@ for i, (file_path, freq_range, load) in enumerate(zip(file_paths, frequency_rang
 plt.tight_layout()
 plt.show()
 
-mvc_pp06 = 0.1715
+mvc_pp04 = 0.2077
 
-norm_max_rms_values = np.divide(max_rms_values, mvc_pp06)
+norm_max_rms_values = np.divide(max_rms_values, mvc_pp04)
 
 # Plot maximum average RMS against load
 plt.figure()
