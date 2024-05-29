@@ -72,10 +72,10 @@ def process_and_plot(file_path, start_freq, end_freq, MVC_values):
     return normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar
 
 # Define file paths and frequency ranges
-file_paths = ["PP03/PP03_6kg.txt", "PP03/PP03_10kg.txt"]
-MVC_values = [0.1374, 0.3226, 0.1239, 0.0774]
-frequency_ranges = [(8300, 9200), (0, 4700)]
-loads = [6, 10]  # Corresponding loads in kg
+file_paths = ["PP05/PP05_6kg.txt", "PP05/PP05_8kg.txt", "PP05/PP05_10kg.txt"]
+frequency_ranges = [(6600, 8400), (7200,8400), (8600, 10100)]
+MVC_values = [0.1436, 0.1427, 0.3514, 0.1418]
+loads = [6, 8, 10]
 
 # Collect normalized values for each load
 normalized_values_thoracic_left = []
@@ -109,7 +109,7 @@ plt.plot(normalized_values_lumbar_right, loads,  'mo-', label='Normalized Lumbar
 
 plt.ylabel('Load (kg)')
 plt.xlabel('Normalized EMG (mV/mV)')
-plt.title('Load against Normalized EMG PP00')
+plt.title('Load against Normalized EMG PP05')
 plt.legend()
 plt.grid(True)
 plt.show()

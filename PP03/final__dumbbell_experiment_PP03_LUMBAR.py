@@ -108,7 +108,7 @@ norm_max_rms_values = np.divide(max_rms_values, mvc_pp03)
 
 # Plot maximum average RMS against load
 plt.figure()
-plt.plot(loads, norm_max_rms_values, marker='o')
+plt.plot(norm_max_rms_values, loads, marker='o')
 plt.xlabel('Load (kg)')
 plt.ylabel('Maximum Average RMS (mV)')
 plt.title('Maximum Average RMS vs. Load')

@@ -17,7 +17,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     y = signal.lfilter(b, a, data)
     return y
 
-def process_and_plot(file_path, start_freq, end_freq, plot_position, MVC_values):
+def process_and_plot(file_path, start_freq, end_freq, MVC_values):
     # Load the data from the file
     data = np.loadtxt(file_path)
 
@@ -25,8 +25,15 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position, MVC_values)
     frequency = data[:, 0]
     relevant_data = data[(frequency >= start_freq) & (frequency <= end_freq), 4:8]
 
+    print(relevant_data)
+
     # Transform values to millivolt
     transformed_data = transform_mV(relevant_data)
+
+    # Check for any invalid values
+    if np.any(np.isnan(transformed_data)) or np.any(np.isinf(transformed_data)):
+        print(f"Invalid values found in transformed data for {file_path}")
+        return None, None, None, None
 
     cutoff = 10  # Define the cutoff frequency
     fs = 1000   # Define the sampling frequency
@@ -35,37 +42,31 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position, MVC_values)
     # Filter ES-T thoracic data and calculate RMS
     filtered_rms_left_thoracic = butter_lowpass_filter((transformed_data[:, 0])**2, cutoff, fs, order)
     filtered_rms_right_thoracic = butter_lowpass_filter((transformed_data[:, 2])**2, cutoff, fs, order)
-    filtered_rms_left_thoracic = np.sqrt(filtered_rms_left_thoracic)
-    filtered_rms_right_thoracic = np.sqrt(filtered_rms_right_thoracic)
+    filtered_rms_left_thoracic = np.sqrt(np.abs(filtered_rms_left_thoracic))
+    filtered_rms_right_thoracic = np.sqrt(np.abs(filtered_rms_right_thoracic))
 
     # Filter ES-T lumbar data and calculate RMS
     filtered_rms_left_lumbar = butter_lowpass_filter((transformed_data[:, 1])**2, cutoff, fs, order)
     filtered_rms_right_lumbar = butter_lowpass_filter((transformed_data[:, 3])**2, cutoff, fs, order)
-    filtered_rms_left_lumbar = np.sqrt(filtered_rms_left_lumbar)
-    filtered_rms_right_lumbar = np.sqrt(filtered_rms_right_lumbar)
+    filtered_rms_left_lumbar = np.sqrt(np.abs(filtered_rms_left_lumbar))
+    filtered_rms_right_lumbar = np.sqrt(np.abs(filtered_rms_right_lumbar))
 
-    # Find the maximum values of the average RMS for thoracic and lumbar regions
-    max_rms_left_thoracic = np.max(filtered_rms_left_thoracic)
-    max_rms_index_left_thoracic = np.argmax(filtered_rms_left_thoracic)
-    max_rms_right_thoracic = np.max(filtered_rms_right_thoracic)
-    max_rms_index_right_thoracic = np.argmax(filtered_rms_right_thoracic)
-
-    max_rms_left_lumbar = np.max(filtered_rms_left_lumbar)
-    max_rms_index_left_lumbar = np.argmax(filtered_rms_left_lumbar)
-    max_rms_right_lumbar = np.max(filtered_rms_right_lumbar)
-    max_rms_index_right_lumbar = np.argmax(filtered_rms_right_lumbar)
+    # Calculate the average of the maximum and minimum RMS values for thoracic and lumbar regions
+    avg_rms_left_thoracic = (np.max(filtered_rms_left_thoracic) + np.min(filtered_rms_left_thoracic)) / 2
+    avg_rms_right_thoracic = (np.max(filtered_rms_right_thoracic) + np.min(filtered_rms_right_thoracic)) / 2
+    avg_rms_left_lumbar = (np.max(filtered_rms_left_lumbar) + np.min(filtered_rms_left_lumbar)) / 2
+    avg_rms_right_lumbar = (np.max(filtered_rms_right_lumbar) + np.min(filtered_rms_right_lumbar)) / 2
 
     # Normalize the RMS values using the provided MVC values
-    normalized_rms_left_thoracic = max_rms_left_thoracic / MVC_values[0]
-    normalized_rms_right_thoracic = max_rms_right_thoracic / MVC_values[1]
-    normalized_rms_left_lumbar = max_rms_left_lumbar / MVC_values[2]
-    normalized_rms_right_lumbar = max_rms_right_lumbar / MVC_values[3]
+    normalized_rms_left_thoracic = avg_rms_left_thoracic / MVC_values[0]
+    normalized_rms_right_thoracic = avg_rms_right_thoracic / MVC_values[1]
+    normalized_rms_left_lumbar = avg_rms_left_lumbar / MVC_values[2]
+    normalized_rms_right_lumbar = avg_rms_right_lumbar / MVC_values[3]
 
-    # Print the maximum RMS values
-    print(f'Max RMS Thoracic ES-T Left for {file_path}: {max_rms_left_thoracic:.4f}, Normalized: {normalized_rms_left_thoracic:.4f}')
-    print(f'Max RMS Thoracic ES-T Right for {file_path}: {max_rms_right_thoracic:.4f}, Normalized: {normalized_rms_right_thoracic:.4f}')
-    print(f'Max RMS Lumbar ES-T Left for {file_path}: {max_rms_left_lumbar:.4f}, Normalized: {normalized_rms_left_lumbar:.4f}')
-    print(f'Max RMS Lumbar ES-T Right for {file_path}: {max_rms_right_lumbar:.4f}, Normalized: {normalized_rms_right_lumbar:.4f}')
+    # Check for any invalid values after normalization
+    if np.any(np.isnan([normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar])) or np.any(np.isinf([normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar])):
+        print(f"Invalid values found in normalized data for {file_path}")
+        return None, None, None, None
 
     # Return the normalized values for plotting
     return normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar
@@ -74,7 +75,7 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position, MVC_values)
 file_paths = ["PP00/PP00_6kg.txt", "PP00/PP00_8kg.txt", "PP00/PP00_10kg.txt"]
 frequency_ranges = [(4000, 7200), (11880, 15800), (4300, 5500)]
 MVC_values = [0.3526, 0.3038, 0.2002, 0.1559]
-loads = [10, 8 , 6]
+loads = [6,8,10]
 
 # Collect normalized values for each load
 normalized_values_thoracic_left = []
@@ -84,23 +85,31 @@ normalized_values_lumbar_right = []
 
 # Process each file and collect the normalized values
 for file_path, freq_range in zip(file_paths, frequency_ranges):
-    normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar = process_and_plot(file_path, freq_range[0], freq_range[1], 1, MVC_values)
-    normalized_values_thoracic_left.append(normalized_rms_left_thoracic)
-    normalized_values_thoracic_right.append(normalized_rms_right_thoracic)
-    normalized_values_lumbar_left.append(normalized_rms_left_lumbar)
-    normalized_values_lumbar_right.append(normalized_rms_right_lumbar)
+    normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar = process_and_plot(file_path, freq_range[0], freq_range[1], MVC_values)
+    if normalized_rms_left_thoracic is not None:
+        normalized_values_thoracic_left.append(normalized_rms_left_thoracic)
+        normalized_values_thoracic_right.append(normalized_rms_right_thoracic)
+        normalized_values_lumbar_left.append(normalized_rms_left_lumbar)
+        normalized_values_lumbar_right.append(normalized_rms_right_lumbar)
+
+# Collect the data points into arrays
+data_points = [loads,normalized_values_thoracic_left,normalized_values_thoracic_right,normalized_values_lumbar_left,normalized_values_lumbar_right]
+
+# Print the collected data points
+print("Collected Data Points:")
+print(data_points)
 
 # Plot the normalized RMS values against the loads
 plt.figure(figsize=(12, 8))
 
-plt.plot(loads, normalized_values_thoracic_left, 'bo-', label='Normalized Thoracic ES-T Left')
-plt.plot(loads, normalized_values_thoracic_right, 'go-', label='Normalized Thoracic ES-T Right')
-plt.plot(loads, normalized_values_lumbar_left, 'ro-', label='Normalized Lumbar ES-T Left')
-plt.plot(loads, normalized_values_lumbar_right, 'mo-', label='Normalized Lumbar ES-T Right')
+plt.plot(normalized_values_thoracic_left, loads,  'bo-', label='Normalized Thoracic ES-T Left')
+plt.plot(normalized_values_thoracic_right, loads,  'go-', label='Normalized Thoracic ES-T Right')
+plt.plot(normalized_values_lumbar_left, loads,  'ro-', label='Normalized Lumbar ES-T Left')
+plt.plot(normalized_values_lumbar_right, loads,  'mo-', label='Normalized Lumbar ES-T Right')
 
-plt.xlabel('Load (kg)')
-plt.ylabel('Normalized RMS')
-plt.title('Normalized RMS Values Against Load')
+plt.ylabel('Load (kg)')
+plt.xlabel('Normalized EMG (mV/mV)')
+plt.title('Load against Normalized EMG PP00')
 plt.legend()
 plt.grid(True)
 plt.show()
