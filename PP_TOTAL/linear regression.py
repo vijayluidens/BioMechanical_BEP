@@ -110,42 +110,85 @@ plt.plot(mean_pp05_lumbar, loads, 'x-', label='PP05 Lumbar')
 
 plt.xlabel('Mean EMG Data (mV/mV)')
 plt.ylabel('Loads (kg)')
-plt.title('Mean EMG Data vs Loads')
+plt.title('Loads vs. Mean EMG Data')
 plt.legend()
 plt.grid(True)
 plt.show()
 
-# Concatenate mean thoracic values from all participants
-all_mean_thoracic = np.concatenate([mean_pp03_thoracic, mean_pp04_thoracic, mean_pp05_thoracic])
+# # Concatenate mean thoracic values from all participants
+# all_mean_thoracic = np.concatenate([mean_pp03_thoracic, mean_pp04_thoracic, mean_pp05_thoracic])
 
-# Concatenate mean lumbar values from all participants
-all_mean_lumbar = np.concatenate([mean_pp03_lumbar, mean_pp04_lumbar, mean_pp05_lumbar])
+# # Concatenate mean lumbar values from all participants
+# all_mean_lumbar = np.concatenate([mean_pp03_lumbar, mean_pp04_lumbar, mean_pp05_lumbar])
 
-# Concatenate loads corresponding to the mean thoracic and lumbar values
-all_loads = np.repeat(loads, 3)
+# # Concatenate loads corresponding to the mean thoracic and lumbar values
+# all_loads = np.repeat(loads, 3)
 
-# Perform linear regression on the concatenated thoracic data
-slope_thoracic, intercept_thoracic, r_value_thoracic, p_value_thoracic, std_err_thoracic = linregress(all_loads, all_mean_thoracic)
+# # Perform linear regression on the concatenated thoracic data
+# slope_thoracic, intercept_thoracic, r_value_thoracic, p_value_thoracic, std_err_thoracic = linregress(all_loads, all_mean_thoracic)
 
-# Perform linear regression on the concatenated lumbar data
-slope_lumbar, intercept_lumbar, r_value_lumbar, p_value_lumbar, std_err_lumbar = linregress(all_loads, all_mean_lumbar)
+# # Perform linear regression on the concatenated lumbar data
+# slope_lumbar, intercept_lumbar, r_value_lumbar, p_value_lumbar, std_err_lumbar = linregress(all_loads, all_mean_lumbar)
 
-# Plotting mean thoracic and lumbar data and linear regression lines
+# # Plotting mean thoracic and lumbar data and linear regression lines
+# plt.figure(figsize=(10, 6))
+
+# # Plot mean thoracic data and linear regression line
+# plt.plot(all_loads, all_mean_thoracic, 'o', label='Mean Thoracic Data')
+# plt.plot(loads, slope_thoracic * np.array(loads) + intercept_thoracic, label=f'Thoracic Linear Regression (R-squared = {r_value_thoracic**2:.2f})')
+
+# # Plot mean lumbar data and linear regression line
+# plt.plot(all_loads, all_mean_lumbar, 'o', label='Mean Lumbar Data')
+# plt.plot(loads, slope_lumbar * np.array(loads) + intercept_lumbar, label=f'Lumbar Linear Regression (R-squared = {r_value_lumbar**2:.2f})')
+
+# plt.xlabel('Loads (kg)')
+# plt.ylabel('Mean EMG Data (mV/mV)')
+# plt.title('Mean Thoracic and Lumbar EMG Data vs Loads with Linear Regression')
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+# Combine data for all participants
+combined_thoracic_means = [x * 100 for x in (mean_pp03_thoracic + mean_pp04_thoracic + mean_pp05_thoracic)]
+combined_lumbar_means = [x * 100 for x in (mean_pp03_lumbar + mean_pp04_lumbar + mean_pp05_lumbar)]
+combined_loads = loads * 3  # As we have three participants, each with the same load set
+
+# Step 2: Visualize the data
 plt.figure(figsize=(10, 6))
-
-# Plot mean thoracic data and linear regression line
-plt.plot(all_loads, all_mean_thoracic, 'o', label='Mean Thoracic Data')
-plt.plot(loads, slope_thoracic * np.array(loads) + intercept_thoracic, label=f'Thoracic Linear Regression (R-squared = {r_value_thoracic**2:.2f})')
-
-# Plot mean lumbar data and linear regression line
-plt.plot(all_loads, all_mean_lumbar, 'o', label='Mean Lumbar Data')
-plt.plot(loads, slope_lumbar * np.array(loads) + intercept_lumbar, label=f'Lumbar Linear Regression (R-squared = {r_value_lumbar**2:.2f})')
-
-plt.xlabel('Loads (kg)')
-plt.ylabel('Mean EMG Data (mV/mV)')
-plt.title('Mean Thoracic and Lumbar EMG Data vs Loads with Linear Regression')
+plt.scatter(combined_thoracic_means, combined_loads, label='Thoracic Means')
+plt.scatter(combined_lumbar_means, combined_loads, label='Lumbar Means', color='red')
+plt.xlabel('Mean EMG Data (%)')
+plt.ylabel('Loads (kg)')
+plt.title('Mean EMG Data vs. Load')
 plt.legend()
 plt.grid(True)
 plt.show()
 
+# Step 3: Perform linear regression for EMG data vs Loads
 
+# Thoracic data regression
+slope_thoracic, intercept_thoracic, r_value_thoracic, p_value_thoracic, std_err_thoracic = linregress(combined_thoracic_means, combined_loads)
+
+# Lumbar data regression
+slope_lumbar, intercept_lumbar, r_value_lumbar, p_value_lumbar, std_err_lumbar = linregress(combined_lumbar_means, combined_loads)
+
+# Calculate regression lines
+regression_line_thoracic = [slope_thoracic * x + intercept_thoracic for x in combined_thoracic_means]
+regression_line_lumbar = [slope_lumbar * x + intercept_lumbar for x in combined_lumbar_means]
+
+# Plot EMG data vs. Loads with regression lines
+plt.figure(figsize=(10, 6))
+plt.scatter(combined_thoracic_means, combined_loads, label='Thoracic Means', color='blue')
+plt.plot(combined_thoracic_means, regression_line_thoracic, color='blue', linestyle='dashed', label=f'Thoracic Fit: y={slope_thoracic:.2f}x+{intercept_thoracic:.2f}')
+plt.scatter(combined_lumbar_means, combined_loads, label='Lumbar Means', color='red')
+plt.plot(combined_lumbar_means, regression_line_lumbar, color='red', linestyle='dashed', label=f'Lumbar Fit: y={slope_lumbar:.2f}x+{intercept_lumbar:.2f}')
+plt.xlabel('Normalized Mean EMG Data (%)')
+plt.ylabel('Loads (kg)')
+plt.title('Load vs. Normalized Mean EMG Data')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Print regression statistics
+print(f"Thoracic Linear Regression:\n Slope: {slope_thoracic}\n Intercept: {intercept_thoracic}\n R-squared: {r_value_thoracic**2}\n P-value: {p_value_thoracic}")
+print(f"Lumbar Linear Regression:\n Slope: {slope_lumbar}\n Intercept: {intercept_lumbar}\n R-squared: {r_value_lumbar**2}\n P-value: {p_value_lumbar}")
