@@ -72,7 +72,7 @@ def process_and_plot(file_path, start_freq, end_freq, MVC_values):
     return normalized_rms_left_thoracic, normalized_rms_right_thoracic, normalized_rms_left_lumbar, normalized_rms_right_lumbar
 
 # Define file paths and frequency ranges
-file_paths = ["PP04/PP04_6kg.txt", "PP04/PP04_8kg.txt", "PP04/PP04_10kg.txt"]
+file_paths = ["DUMBBELL_LOAD_TEST/PP04/PP04_6kg.txt", "DUMBBELL_LOAD_TEST/PP04/PP04_8kg.txt", "DUMBBELL_LOAD_TEST/PP04/PP04_10kg.txt"]
 frequency_ranges = [(1500, 3200), (12000, 13100), (14400, 15500)]
 MVC_values = [0.1507, 0.1171, 0.3325, 0.1404]
 loads = [6, 8, 10]

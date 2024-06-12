@@ -84,7 +84,7 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     return max_avg_rms
 
 # Define file paths and frequency ranges
-file_paths = ["PP04/PP04_6kg.txt", "PP04/PP04_8kg.txt", "PP04/PP04_10kg.txt"]
+file_paths = ["DUMBBELL_LOAD_TEST/PP04/PP04_6kg.txt", "DUMBBELL_LOAD_TEST/PP04/PP04_8kg.txt", "DUMBBELL_LOAD_TEST/PP04/PP04_10kg.txt"]
 frequency_ranges = [(6800, 10800),(6600, 15200),(8100, 16500)]
 loads = [6, 8, 10]  # Corresponding loads in kg
 
