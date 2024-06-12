@@ -17,7 +17,7 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     y = signal.lfilter(b, a, data)
     return y
 
-def process_and_plot(file_path, start_freq, end_freq, plot_position):
+def process_and_plot(file_path, start_freq, end_freq, ax):
     # Load the data from the file
     data = np.loadtxt(file_path)
 
@@ -58,30 +58,27 @@ def process_and_plot(file_path, start_freq, end_freq, plot_position):
     time = np.arange(len(selected_indices))
 
     # Plot the selected data
-    plt.subplot(3, 1, plot_position)
-    plt.plot(time, transformed_data[:, 1], label='ES-L Left')
-    plt.plot(time, transformed_data[:, 3], label='ES-L Right')
-    plt.xlabel('Sample Index')
-    plt.ylabel('Amplitude (mV)')
-    plt.title(f'Erector Spinae Data for {file_path} Specified Frequency Range')
+    ax.plot(time, transformed_data[:, 1], label='ES-L Left')
+    ax.plot(time, transformed_data[:, 3], label='ES-L Right')
+    ax.set_xlabel('Time [ms]')
+    ax.set_ylabel('Amplitude (mV)')
+    ax.set_title(f'Erector Spinae Data for {file_path} Specified Frequency Range')
 
     # Plot filtered RMS of ES-L left and right
-    plt.plot(time, filtered_rms_left, 'k', label='Filtered RMS of ES-L Left')
-    plt.plot(time, filtered_rms_right, 'm', label='Filtered RMS of ES-L Right')
+    ax.plot(time, filtered_rms_left, 'k', label='Filtered RMS of ES-L Left')
+    ax.plot(time, filtered_rms_right, 'm', label='Filtered RMS of ES-L Right')
 
     # Plot average RMS
-    plt.plot(time, average_rms, 'r', label='Average RMS')
+    ax.plot(time, average_rms, 'r', label='Average RMS')
 
     # Plot vertical line at max average RMS index
-    plt.axvline(x=max_avg_rms_index, color='g', linestyle='--', label='Max Avg RMS')
+    ax.axvline(x=max_avg_rms_index, color='g', linestyle='--', label='Max Avg RMS')
 
     # Plot dot at maximum value of the mean
-    plt.scatter(max_avg_rms_index, max_avg_rms, color='b', zorder=5)
-    plt.text(max_avg_rms_index, max_avg_rms, f'({max_avg_rms_index}, {max_avg_rms:.4f})', fontsize=9, verticalalignment='bottom')
+    ax.scatter(max_avg_rms_index, max_avg_rms, color='b', zorder=5)
+    ax.text(max_avg_rms_index, max_avg_rms, f'({max_avg_rms_index}, {max_avg_rms:.4f})', fontsize=9, verticalalignment='bottom')
 
-    plt.legend()
-
-    return max_avg_rms
+    return ax
 
 # Define file paths and frequency ranges
 file_paths = ["DUMBBELL_LOAD_TEST/PP03/PP03_6kg.txt", "DUMBBELL_LOAD_TEST/PP03/PP03_10kg.txt"]
@@ -89,28 +86,15 @@ frequency_ranges = [(5200, 7100), (4100, 5500)]
 loads = [6, 10]  # Corresponding loads in kg
 
 # Create a figure for subplots
-plt.figure(figsize=(12, 18))
+fig, axes = plt.subplots(2, 1, figsize=(12, 12))
 
 max_rms_values = []
 
 # Process and plot each file
 for i, (file_path, freq_range, load) in enumerate(zip(file_paths, frequency_ranges, loads)):
-    max_rms = process_and_plot(file_path, freq_range[0], freq_range[1], i + 1)
-    max_rms_values.append(max_rms)
+    ax = process_and_plot(file_path, freq_range[0], freq_range[1], axes[i])
+    max_rms_values.append(ax)
 
 # Show the plots
-plt.tight_layout()
-plt.show()
-
-mvc_pp03 = 0.0941
-
-norm_max_rms_values = np.divide(max_rms_values, mvc_pp03)
-
-# Plot maximum average RMS against load
-plt.figure()
-plt.plot(norm_max_rms_values, loads, marker='o')
-plt.xlabel('Load (kg)')
-plt.ylabel('Maximum Average RMS (mV)')
-plt.title('Maximum Average RMS vs. Load')
-plt.grid(True)
+plt.tight_layout(pad=3.0)
 plt.show()
