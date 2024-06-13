@@ -25,8 +25,6 @@ def process_and_plot(file_path, start_freq, end_freq, MVC_values):
     frequency = data[:, 0]
     relevant_data = data[(frequency >= start_freq) & (frequency <= end_freq), 4:8]
 
-    print(relevant_data)
-
     # Transform values to millivolt
     transformed_data = transform_mV(relevant_data)
 
@@ -146,3 +144,9 @@ for i, load in enumerate(loads):
     plt.legend()
     plt.grid(True)
     plt.show()
+    print(np.max(rms_values_thoracic_left[i]))
+    print(np.max(rms_values_thoracic_right[i]))
+    print(np.max(rms_values_lumbar_left[i]))
+    print(np.max(rms_values_lumbar_right[i]))
+
+
